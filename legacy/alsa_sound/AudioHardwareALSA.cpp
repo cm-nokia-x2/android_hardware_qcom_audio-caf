@@ -163,7 +163,7 @@ AudioHardwareALSA::AudioHardwareALSA() :
         return;
     }
 #ifdef QCOM_ACDB_ENABLED
-    mAcdbHandle = ::dlopen("/system/lib/libacdbloader.so", RTLD_NOW);
+    mAcdbHandle = ::dlopen("/vendor/lib/libacdbloader.so", RTLD_NOW);
     if (mAcdbHandle == NULL) {
         ALOGE("AudioHardware: DLOPEN not successful for ACDBLOADER");
     } else {
@@ -178,14 +178,16 @@ AudioHardwareALSA::AudioHardwareALSA() :
     }
     mALSADevice->setACDBHandle(mAcdbHandle);
 #endif
-
+    sleep (10);
     if((fp = fopen("/proc/asound/cards","r")) == NULL) {
         ALOGE("Cannot open /proc/asound/cards file to get sound card info");
         mStatus = NO_INIT;
         return;
     } else {
+	ALOGE("soundCardInfo");
         while((fgets(soundCardInfo, sizeof(soundCardInfo), fp) != NULL)) {
             ALOGV("SoundCardInfo %s", soundCardInfo);
+	    ALOGE("SoundCardInfo %s", soundCardInfo);
             if (strstr(soundCardInfo, "msm8960-tabla1x-snd-card")) {
                 codec_rev = 1;
                 break;
@@ -220,11 +222,15 @@ AudioHardwareALSA::AudioHardwareALSA() :
                 break;
             } else if (strstr(soundCardInfo, "msm8960-snd-card-wcd")) {
                 break;
+            } else if (strstr(soundCardInfo, "msm8x10-snd-card")) {
+                codec_rev = 45;
+                break;
             } else if(strstr(soundCardInfo, "no soundcards")) {
                 ALOGE("NO SOUND CARD DETECTED");
                 if(sleep_retry < SOUND_CARD_SLEEP_RETRY) {
                     ALOGD("Sleeping for 100 ms");
                     usleep(SOUND_CARD_SLEEP_WAIT * 1000);
+		    sleep(1);
                     sleep_retry++;
                     fseek(fp, 0, SEEK_SET);
                     continue;
@@ -262,6 +268,8 @@ AudioHardwareALSA::AudioHardwareALSA() :
        case 42: strcpy(ucm_name_str, "snd_soc_msm_Taiko_Fluid");
                 break;
        case 43: strcpy(ucm_name_str, "snd_soc_msm_Taiko_liquid");
+                break;
+       case 45: strcpy(ucm_name_str, "snd_soc_msm_8x10_wcd");
                 break;
        default:
            property_get("ro.board.platform", platform, "");

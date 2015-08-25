@@ -12,5 +12,8 @@ endif
 ifeq ($(TARGET_BOARD_PLATFORM),msm8974)
 include $(AENC_QCELP13_PATH)/qdsp6/Android.mk
 endif
+ifeq ($(TARGET_BOARD_PLATFORM),msm8610)
+include $(AENC_QCELP13_PATH)/qdsp6/Android.mk
+endif
 
 endif
